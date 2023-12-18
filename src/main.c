@@ -78,19 +78,19 @@ int main(int argc, char *argv[]) {
         }
 
         if (child_pid == 0) {
+            printf("\033[?25h");
             printf("Enter text to send (Ctrl+C to exit): ");
-            char buffer[256];
-            fgets(buffer, sizeof(buffer), stdin);
+            fgets(message, sizeof(message), stdin);
 
-            write(fd, buffer, strlen(buffer));
+            write(fd, message, strlen(message));
 
         } else {
             // Код, выполняемый в родительском процессе
             size_t n = read(fd, buffer, sizeof(buffer));
             usleep(1000);
             if (n > 0) {
-                //printf("Received: %.*s", (char)n, buffer);
-                //printf("\n");
+                printf("Received: %.*s", (char)n, buffer);
+                printf("\n");
                 //usleep(100000);
             }
         }
