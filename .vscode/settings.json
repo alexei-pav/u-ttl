@@ -1,0 +1,10 @@
+{
+    "makefile.makefilePath": "/home/losos/src/u-ttl/build",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/losos/src/out",
+            "binaryPath": "/home/losos/src/out/u-ttl.elf",
+            "binaryArgs": []
+        }
+    ]
+}

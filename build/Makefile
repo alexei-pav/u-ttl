@@ -3,8 +3,6 @@ TARGET = u-ttl
 CC = gcc
 OBJCOPY = objcopy
 
-#CFLAGS = -c -g -nostdlib -mcpu=cortex-m3 -mthumb -I./src/include/ -I./Include/
-#LDFLAGS = -Wl,-Tlinker.ld -nostartfiles -I./src/include/ -I./Include/
 CFLAGS = -c -g -I../src/inc/ 
 
 SRC_C_DIR = ../src/
