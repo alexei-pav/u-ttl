@@ -8,9 +8,5 @@ make
 
 For run type:
 ```sh
-make run
-```
-or
-```sh
-u-ttl.elf /dev/<your_device> 9600
+u-ttl.elf 9600 /dev/<your_device>
 ```
