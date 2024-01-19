@@ -6,11 +6,11 @@ For build type:
 make
 ```
 
-For run type run:
+For run type:
 ```sh
 make run
 ```
 or
 ```sh
-a.out /dev/<your_device> 9600
+u-ttl.elf /dev/<your_device> 9600
 ```
