@@ -1,4 +1,4 @@
-# u-ttl
+# U-TTL
 U-TTL is a cli application for Linux. Use with an usb-ttl (usart) adapter. 
 
 For build type:
