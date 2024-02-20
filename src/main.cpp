@@ -1,73 +1,98 @@
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <thread>
+#include <chrono>
+#include <cstring>
+#include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
-#include <cstring>
 
-// Function to enable/disable terminal input echoing
-void echo(bool enable) {
-    struct termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    if (enable)
-        tty.c_lflag |= ECHO;
-    else
-        tty.c_lflag &= ~ECHO;
-    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+using namespace std::chrono_literals;
+
+std::string add_symbols(const std::string& str, char symbol) {
+    // Create a new string to avoid modifying the original (recommended)
+    std::string new_str = str;
+
+    // Check for empty string edge case
+    if (new_str.empty()) {
+        new_str += symbol;
+    } else {
+        // Efficiently append the symbol using += or push_back
+        new_str.push_back(symbol);
+    }
+
+    return new_str;
 }
 
-void set_interface_attribs(int fd, int speed) 
-{
-    struct termios tty;
-    memset(&tty, 0, sizeof(tty));
-    if (tcgetattr(fd, &tty) != 0) {
-        perror("Error from tcgetattr");
-        exit(EXIT_FAILURE);
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
+    std::cerr << "Usage: " << argv[0] << " <baud_rate> <port_name>" << std::endl;
+    return 1;
+  }
+
+  // Get baud rate and port from arguments
+  int baud_rate = std::stoi(argv[1]);
+  std::string port_name = argv[2];
+
+  // Open serial port
+  int fd = open(port_name.c_str(), O_RDWR | O_NOCTTY);
+  if (fd < 0) {
+    std::cerr << "Error opening port: " << port_name << std::endl;
+    return 1;
+  }
+
+
+  // Set port configuration
+  struct termios options;
+  tcgetattr(fd, &options);
+  cfsetispeed(&options, baud_rate);
+  cfsetospeed(&options, baud_rate);
+  options.c_cflag |= PARENB;   // Enable parity
+  options.c_cflag &= ~INPCK;   // Don't check parity
+  options.c_cflag &= ~CSIZE;   // 8 bits per character
+  options.c_cflag |= CS8;
+  options.c_cflag &= ~CRTSCTS; // No hardware flow control
+  options.c_iflag &= ~(IXON | IXOFF | IXANY); // No software flow control
+  options.c_lflag &= ~ICANON;  // Non-canonical mode
+  options.c_cc[VMIN] = 1;      // Read one byte at a time
+  options.c_cc[VTIME] = 0;
+  tcsetattr(fd, TCSANOW, &options);
+
+  // Thread for receiving data
+  std::thread receive_thread([&]() {
+    while (true) {
+      char buffer[128];
+      ssize_t bytes_read = read(fd, buffer, sizeof(buffer));
+      if (bytes_read < 0) {
+        std::cerr << "Error reading from port: " << strerror(errno) << std::endl;
+        break;
+      }
+      if (bytes_read > 0) {
+        std::string data(buffer, bytes_read);
+        std::cout << data << std::flush;
+      }
     }
+  });
 
-    cfsetospeed(&tty, speed);
-    cfsetispeed(&tty, speed);
-
-    tty.c_cflag |= (CLOCAL | CREAD); /* ignore modem controls, enable reading */
-    tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;      /* 8-bit characters */
-    tty.c_cflag &= ~PARENB;  /* no parity bit */
-    tty.c_cflag &= ~CSTOPB;  /* only need 1 stop bit */
-    tty.c_cflag &= ~CRTSCTS; /* no hardware flowcontrol */
-
-    /* setup for non-canonical mode */
-    tty.c_iflag &= ~(IGNBRK | BRKINT | ICRNL | INLCR | PARMRK | INPCK | ISTRIP | IXON);
-    tty.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
-
-    /* fetch bytes as they become available */
-    tty.c_cc[VMIN] = 1;
-    tty.c_cc[VTIME] = 1;
-
-    if (tcsetattr(fd, TCSANOW, &tty) != 0) {
-        perror("Error from tcsetattr");
-        exit(EXIT_FAILURE);
+  // Read input and send to port
+  while (true) {
+    std::string line;
+    std::getline(std::cin, line);
+    if (line == "exit") {
+      break;
     }
-}
-
-int main(void) 
-{
-    // Disable terminal input echoing
-    echo(false);
-    set_interface_attribs();
-
-    // Print welcome message
-    std::cout << "Welcome to My TUI Program!" << std::endl;
-    std::cout << "Press 'q' to quit." << std::endl;
-
-    // Loop to capture user input
-    char ch;
-    while (std::cin >> ch && ch != 'q') {
-        // Clear screen and display user input
-        std::cout << "\033[2J\033[1;1H"; // ANSI escape sequence to clear screen
-        std::cout << "You pressed '" << ch << "'." << std::endl;
-        std::cout << "Press 'q' to quit." << std::endl;
+    std::string enter_line = add_symbols(line, '\n');
+    ssize_t bytes_written = write(fd, enter_line.c_str(), enter_line.size());
+    if (bytes_written < 0) {
+      std::cerr << "Error writing to port: " << strerror(errno) << std::endl;
+      break;
     }
+  }
 
-    // Re-enable terminal input echoing
-    echo(true);
+  // Wait for receive thread and close port
+  receive_thread.join();
+  close(fd);
 
-    return 0;
+  return 0;
 }

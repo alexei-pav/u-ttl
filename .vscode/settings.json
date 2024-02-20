@@ -6,5 +6,9 @@
             "binaryPath": "/home/losos/src/out/u-ttl.elf",
             "binaryArgs": []
         }
-    ]
+    ],
+    "files.associations": {
+        "chrono": "cpp",
+        "cerrno": "cpp"
+    }
 }

@@ -1,3 +1,0 @@
-/home/losos/src/u-ttl/build/CMakeFiles/u-ttl.dir
-/home/losos/src/u-ttl/build/CMakeFiles/edit_cache.dir
-/home/losos/src/u-ttl/build/CMakeFiles/rebuild_cache.dir
