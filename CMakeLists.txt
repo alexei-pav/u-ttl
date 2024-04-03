@@ -14,5 +14,5 @@ file(GLOB SOURCES "src/*.cpp")
 # Add executable
 add_executable(u-ttl ${SOURCES})
 
-# Link ncurses library
-target_link_libraries(u-ttl)
+# Link libraries
+target_link_libraries(u-ttl PUBLIC pthread)
