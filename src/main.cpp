@@ -27,20 +27,19 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-
   // Set port configuration
   struct termios options;
   tcgetattr(fd, &options);
   cfsetispeed(&options, baud_rate);
   cfsetospeed(&options, baud_rate);
-  options.c_cflag |= PARENB;   // Enable parity
-  options.c_cflag &= ~INPCK;   // Don't check parity
-  options.c_cflag &= ~CSIZE;   // 8 bits per character
-  options.c_cflag |= CS8;      // Set data bits
-  options.c_cflag &= ~CRTSCTS; // No hardware flow control
+  options.c_cflag |= PARENB;                  // Enable parity
+  options.c_cflag &= ~INPCK;                  // Don't check parity
+  options.c_cflag &= ~CSIZE;                  // 8 bits per character
+  options.c_cflag |= CS8;                     // Set data bits
+  options.c_cflag &= ~CRTSCTS;                // No hardware flow control
   options.c_iflag &= ~(IXON | IXOFF | IXANY); // No software flow control
-  options.c_lflag &= ~ICANON;  // Non-canonical mode
-  options.c_cc[VMIN] = 1;      // Read one byte at a time
+  options.c_lflag &= ~ICANON;                 // Non-canonical mode
+  options.c_cc[VMIN] = 1;                     // Read one byte at a time
   options.c_cc[VTIME] = 8;
 
   tcsetattr(fd, TCSANOW, &options);
