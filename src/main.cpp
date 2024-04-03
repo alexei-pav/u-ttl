@@ -10,8 +10,7 @@
 
 using namespace std::chrono_literals;
 
-int main(int argc, char *argv[]) 
-{
+int main(int argc, char *argv[]) {
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << " <baud_rate> <port_name>" << std::endl;
     return 1;
@@ -34,32 +33,35 @@ int main(int argc, char *argv[])
   tcgetattr(fd, &options);
   cfsetispeed(&options, baud_rate);
   cfsetospeed(&options, baud_rate);
-  options.c_cflag &= ~PARENB;                 // Disable parity
-  options.c_cflag &= ~CSTOPB;                 // 1 stop bit
-  options.c_cflag &= ~CRTSCTS;                // No hardware flow control
-  options.c_cflag |= CS8;                     // 8 bits per character
+  options.c_cflag |= PARENB;   // Enable parity
+  options.c_cflag &= ~INPCK;   // Don't check parity
+  options.c_cflag &= ~CSIZE;   // 8 bits per character
+  options.c_cflag |= CS8;      // Set data bits
+  options.c_cflag &= ~CRTSCTS; // No hardware flow control
   options.c_iflag &= ~(IXON | IXOFF | IXANY); // No software flow control
-  options.c_lflag &= ~ICANON;                 // Non-canonical mode
-  options.c_cc[VMIN] = 1;                     // Read one byte at a time
-  options.c_cc[VTIME] = 0;;
+  options.c_lflag &= ~ICANON;  // Non-canonical mode
+  options.c_cc[VMIN] = 1;      // Read one byte at a time
+  options.c_cc[VTIME] = 8;
+
   tcsetattr(fd, TCSANOW, &options);
 
-  // Clear terminal
-  std::cout << "\033[2J\033[1;1H";
-  
   // Thread for receiving data
   std::thread receive_thread([&]() {
+    bool isEndLine = false;
     while (true) {
-      char buffer[128];
+      char* buffer = new char[128];
       ssize_t bytes_read = read(fd, buffer, sizeof(buffer));
       if (bytes_read < 0) {
         std::cerr << "Error reading from port: " << strerror(errno) << std::endl;
-        exit(-1);
-      } 
-      if (bytes_read > 0) {
+        break;
+      } else {
         std::string data(buffer, bytes_read);
         std::cout << data << std::flush;
       }
+      if (isEndLine == true){
+        std::cout << std::endl;
+      }
+      delete[] buffer;
     }
   });
 
@@ -67,15 +69,13 @@ int main(int argc, char *argv[])
   while (true) {
     std::string line;
     std::getline(std::cin, line);
-    if (line == "exit()") {
-      exit(0);
-    } else if (line == "clear()"){
-      std::cout << "\033[2J\033[1;1H";
+    if (line == "exit") {
+      break;
     }
-    ssize_t bytes_written = write(fd, line.c_str(), line.size());
+    ssize_t bytes_written = write(fd, line.data(), line.size());
     if (bytes_written < 0) {
       std::cerr << "Error writing to port: " << strerror(errno) << std::endl;
-      exit(-1);
+      break;
     }
   }
 
