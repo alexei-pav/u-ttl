@@ -1,14 +1,29 @@
 # U-TTL
-U-TTL is a cli application for Linux. Use with an usb-ttl (usart) adapter. 
+U-TTL is an application for Linux. Use with an usb-ttl (usart) adapter. 
 
 Create build/ dir:
 ```sh
-mkdir build/ && cd build/
+mkdir build/
 ```
 
-For build type:
+The first thing you need to do:
 ```sh
-cmake .. && make 
+meson setup build/ #setup meson in build/
+```
+
+Then go to the build directory:
+```sh
+cd build/
+```
+Finally compile it:
+```sh
+ninja
+```
+
+**OR**
+
+```sh
+meson compile
 ```
 
 For run type:
