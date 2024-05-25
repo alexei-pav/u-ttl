@@ -13,5 +13,5 @@ cmake .. && make
 
 For run type:
 ```sh
-u-ttl <baud_rate> /dev/<your_device>
+./u-ttl <baud_rate> /dev/<your_device>
 ```
