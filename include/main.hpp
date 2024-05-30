@@ -3,23 +3,24 @@
 
 #include <iostream>
 
-
-#include <gtkmm/button.h>
 #include <gtkmm/window.h>
+#include <gtkmm/box.h>
+#include <gtkmm/button.h>
+#include <gtkmm/entry.h>
 
-class HelloWorld : public Gtk::Window
+class MainWindow : public Gtk::Window
 {
 
 public:
-  HelloWorld();
-  virtual ~HelloWorld();
+  MainWindow();
+  virtual ~MainWindow();
 
 protected:
-  //Signal handlers:
   void on_button_clicked();
-
   //Member widgets:
-  Gtk::Button m_button;
+  Gtk::Box m_VBox;
+  Gtk::Entry m_Entry;
+  Gtk::Button m_Button;
 };
 
 #endif
