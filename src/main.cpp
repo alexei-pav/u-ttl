@@ -1,21 +1,23 @@
 #include "main.hpp"
-#include "gtkmm/enums.h"
 #include <gtkmm/application.h>
 
 
 MainWindow::MainWindow()
-    : m_VBox(Gtk::Orientation::VERTICAL),
-      m_Button("Print Text")
+    : m_HBox(Gtk::Orientation::HORIZONTAL, 0),
+      m_VBox(Gtk::Orientation::VERTICAL, 10),
+      m_Button("Print Text"),
+      m_Button2("test btn")
 {
-  set_title("U-TTL");                       /* set application title */
-  set_default_size(200, 200); /* set default window size */
+  set_title("U-TTL");                                     /* set application title */
+  set_default_size(200, 200);               /* set default window size */
 
   set_child(m_VBox);
 
-  m_VBox.append(m_Entry);
-  m_VBox.append(m_Button);
-  m_VBox.set_valign(Gtk::Align::CENTER);
-  m_VBox.set_halign(Gtk::Align::CENTER);
+  m_HBox.append(m_Entry);
+  m_HBox.append(m_Button);
+
+  m_VBox.append(m_HBox);
+  m_VBox.append(m_Button2);
 
   m_Button.signal_clicked()
         .connect(sigc::mem_fun(*this, &MainWindow::on_button_clicked));
@@ -29,8 +31,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_button_clicked()
 {
-  std::cout << "Entered text: " 
-      << m_Entry.get_text() << std::endl;
+  if ( m_Entry.get_text() != "")
+      std::cout << "Entered text: " 
+          << m_Entry.get_text() << std::endl;
 }
 
 int main(int argc, char *argv[])
